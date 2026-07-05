@@ -21,47 +21,19 @@ class TripRequest(BaseModel):
     # Questionnaire answers
     trip_purpose: str = Field("leisure", description="leisure | honeymoon | family | adventure | business")
     travel_style: str = Field("balanced", description="budget | balanced | luxury")
-    dietary_requirements: List[str] = Field(default_factory=list, description="e.g. vegetarian, halal, gluten-free")
+    dietary_requirements: List[str] = Field(default_factory=list)
     has_children: bool = False
     children_ages: List[int] = Field(default_factory=list)
     has_elderly: bool = False
     mobility_requirements: bool = False
-    interests: List[str] = Field(default_factory=list, description="e.g. history, food, nightlife, nature, art")
+    interests: List[str] = Field(default_factory=list)
     accommodation_preference: str = Field("hotel", description="hotel | airbnb | hostel | resort")
     pace: str = Field("moderate", description="relaxed | moderate | packed")
-
-    # Free-text
-    special_instructions: Optional[str] = Field(None, description="Any specific instructions")
-
-    # AI provider selection
+    special_instructions: Optional[str] = None
     ai_provider: AIProvider = AIProvider.gemini
 
 
-class FlightSearchRequest(BaseModel):
-    origin_iata: str
-    destination_iata: str
-    departure_date: str
-    return_date: Optional[str] = None
-    adults: int = 1
-    cabin_class: str = "ECONOMY"
-
-
-class HotelSearchRequest(BaseModel):
-    city_code: str
-    check_in: str
-    check_out: str
-    adults: int = 1
-
-
 class SaveItineraryRequest(BaseModel):
-    trip_request: TripRequest
-    itinerary: dict
-    flights: Optional[dict] = None
-    hotels: Optional[dict] = None
-
-
-class ItineraryResponse(BaseModel):
-    id: Optional[str] = None
     trip_request: TripRequest
     itinerary: dict
     flights: Optional[dict] = None

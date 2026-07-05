@@ -1,90 +1,99 @@
 # Holiday Planner ✈
 
-An AI-powered holiday itinerary generator with live flight and hotel search.
+An AI-powered holiday itinerary generator with live hotel search and flight booking links.
 
 ## Features
 
-- **AI Itinerary Generation** — supports Google Gemini, Anthropic Claude, and OpenAI GPT-4o
-- **Live Flights** — real flight offers via Amadeus API (sandbox or production)
-- **Live Hotels** — real hotel options via Amadeus Hotel Search
-- **Save & Retrieve** — persist itineraries to Supabase
-- **5-step questionnaire** — purpose, style, travellers, interests, dietary requirements
-- **Responsive UI** — clean single-page frontend, no framework required
+- **AI Itinerary Generation** — day-by-day personalised plans via Google Gemini 2.5 Flash, Anthropic Claude, or OpenAI GPT-4o
+- **Live Hotel Search** — real Booking.com results with direct booking links (via RapidAPI)
+- **Flight Search Links** — pre-filled Skyscanner and Google Flights links for your exact route, dates and passenger count
+- **5-step questionnaire** — trip purpose, style, travellers, interests, dietary requirements
+- **Form persistence** — all form fields saved to `localStorage`, restored on refresh
+- **Save & Retrieve** — optionally persist itineraries to Supabase
+- **Responsive UI** — clean single-page vanilla HTML/CSS/JS frontend, no framework needed
 
-## Structure
+## Project Structure
 
 ```
 holiday-planner/
 ├── backend/
-│   ├── main.py              # FastAPI application entry point
-│   ├── config.py            # Settings (pydantic-settings + .env)
-│   ├── models.py            # Pydantic request/response models
+│   ├── main.py                        # FastAPI app, CORS, router mounts
+│   ├── config.py                      # Settings loaded from .env
+│   ├── models.py                      # Pydantic request models
 │   ├── requirements.txt
 │   ├── .env.example
+│   ├── prompts/
+│   │   └── itinerary_prompt.py        # AI prompt builder
 │   ├── routers/
-│   │   ├── itinerary.py     # POST /api/itinerary/generate, /save, GET /{id}
-│   │   ├── flights.py       # POST /api/flights/search, GET /api/flights/iata
-│   │   └── hotels.py        # POST /api/hotels/search
+│   │   ├── itinerary.py               # POST /api/itinerary/generate|save, GET /api/itinerary/
+│   │   ├── flights.py                 # POST /api/flights/search (returns deep links)
+│   │   └── hotels.py                  # POST /api/hotels/search (live Booking.com)
 │   └── services/
-│       ├── ai_service.py    # Gemini / Claude / GPT-4o itinerary generation
-│       ├── amadeus_service.py  # Amadeus flight + hotel search
-│       └── supabase_service.py # Persistence
+│       ├── ai_service.py              # Gemini / Claude / GPT-4o dispatch + retry
+│       ├── rapidapi_service.py        # Booking.com hotels + flight deep link builder
+│       └── supabase_service.py        # Optional persistence
 └── frontend/
-    ├── pages/index.html     # Main planner page
+    ├── pages/index.html               # Main planner page
     ├── styles/styles.css
-    └── scripts/app.js
+    └── scripts/app.js                 # Form logic, API calls, result rendering
 ```
 
-## Setup
+## Quick Start
 
-### 1. Backend
+### 1. Install dependencies
 
 ```bash
-# Create and activate a virtual environment (recommended)
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
 pip install -r backend/requirements.txt
+```
 
-# Copy and fill in your keys
+### 2. Configure environment
+
+```bash
 cp backend/.env.example backend/.env
-# Edit backend/.env with your API keys
+```
 
-# Run the API server
+Edit `backend/.env` — you only need **one AI key** to get started:
+
+| Variable | Required | Where to get it |
+|---|---|---|
+| `GEMINI_API_KEY` | ✅ At least one AI key | [aistudio.google.com](https://aistudio.google.com/app/apikey) — free |
+| `ANTHROPIC_API_KEY` | Optional | [console.anthropic.com](https://console.anthropic.com) |
+| `OPENAI_API_KEY` | Optional | [platform.openai.com](https://platform.openai.com) |
+| `RAPIDAPI_KEY` | Optional (hotels) | [rapidapi.com](https://rapidapi.com) — subscribe to **Booking.com by apidojo** (free tier) |
+| `SUPABASE_URL` + `SUPABASE_ANON_KEY` | Optional (save trips) | [supabase.com](https://supabase.com) — free tier |
+
+### 3. Run the backend
+
+```bash
 python3 -m uvicorn backend.main:app --reload --port 8000
 ```
 
-### 2. Frontend
+### 4. Open the frontend
 
-Open `frontend/pages/index.html` directly in a browser, or serve with any static file server:
+Open `frontend/pages/index.html` directly in your browser, or serve it:
 
 ```bash
-# e.g. using Python's built-in server from the frontend directory
-cd frontend
-python3 -m http.server 3000
+cd frontend && python3 -m http.server 3000
 # then open http://localhost:3000/pages/index.html
 ```
 
-### 3. Environment Variables
+## API Endpoints
 
-Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill in your keys:
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/health` | Health check + configured provider status |
+| `POST` | `/api/itinerary/generate` | Generate AI itinerary (`TripRequest` body) |
+| `POST` | `/api/itinerary/save` | Save itinerary to Supabase |
+| `GET` | `/api/itinerary/` | List saved itineraries |
+| `GET` | `/api/itinerary/{id}` | Retrieve saved itinerary |
+| `POST` | `/api/flights/search` | Returns Skyscanner + Google Flights deep links |
+| `POST` | `/api/hotels/search` | Live hotel search via Booking.com |
 
-| Variable | Description |
-|---|---|
-| `GEMINI_API_KEY` | Google AI Studio API key |
-| `ANTHROPIC_API_KEY` | Anthropic Console API key |
-| `OPENAI_API_KEY` | OpenAI Platform API key |
-| `AMADEUS_CLIENT_ID` | Amadeus for Developers client ID |
-| `AMADEUS_CLIENT_SECRET` | Amadeus for Developers client secret |
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Supabase anon/public key |
+Interactive docs at `http://localhost:8000/docs` when server is running.
 
-> At least one AI provider key is required. Amadeus and Supabase are optional — the app degrades gracefully without them.
+## Supabase Setup (optional)
 
-### 4. Supabase Table (optional)
-
-If you want to save itineraries, create this table in your Supabase project:
+To enable saving itineraries, create this table in your Supabase project:
 
 ```sql
 create table itineraries (
@@ -97,17 +106,19 @@ create table itineraries (
 );
 ```
 
-## API Endpoints
+## Tech Stack
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/health` | Health check & provider status |
-| `POST` | `/api/itinerary/generate` | Generate AI itinerary |
-| `POST` | `/api/itinerary/save` | Save itinerary to Supabase |
-| `GET` | `/api/itinerary/` | List saved itineraries |
-| `GET` | `/api/itinerary/{id}` | Retrieve saved itinerary |
-| `POST` | `/api/flights/search` | Search flight offers |
-| `GET` | `/api/flights/iata?city=London` | Resolve city to IATA code |
-| `POST` | `/api/hotels/search` | Search hotel offers |
+| Layer | Tech |
+|---|---|
+| Backend | Python 3.9+, FastAPI, Uvicorn |
+| AI | Google Gemini 2.5 Flash (default), Claude 3.5 Sonnet, GPT-4o |
+| Hotels | Booking.com via RapidAPI (apidojo) |
+| Flights | Skyscanner + Google Flights deep links |
+| Persistence | Supabase (optional) |
+| Frontend | Vanilla HTML/CSS/JS — no framework |
 
-Interactive API docs available at `http://localhost:8000/docs` when the server is running.
+## Notes
+
+- **Flights**: Live flight pricing APIs have very low free-tier limits. The app instead generates pre-filled search links for Skyscanner and Google Flights — these open with your exact route, dates and passenger count already filled in.
+- **Hotels**: Requires a RapidAPI key with the free **Booking.com by apidojo** subscription. Returns 3–5 results with direct Booking.com booking links.
+- **AI retries**: On Gemini 503 (high demand), the service automatically retries up to 3 times with backoff before failing.

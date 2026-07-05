@@ -252,37 +252,27 @@ function renderPractical(info) {
     </div>`;
 }
 
-function _skyscannerUrl(origin, destination, date, returnDate, adults) {
-  const d = (date || '').replace(/-/g, '');
-  const r = (returnDate || '').replace(/-/g, '');
-  const trip = returnDate ? 'return' : 'one-way';
-  return `https://www.skyscanner.net/transport/flights/${(origin||'').toLowerCase()}/${(destination||'').toLowerCase()}/${d}/${r}/?adults=${adults || 1}&cabinclass=economy&rtn=${returnDate ? 1 : 0}`;
-}
-
 function renderFlights(flights) {
-  if (!flights || !flights.available || !flights.offers?.length) return '';
+  if (!flights || !flights.available) return '';
+  const { skyscanner, google_flights, origin, destination, departure, adults, cabin_class } = flights;
   return `
     <div class="live-section">
-      <h3>✈ Live Flight Options</h3>
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Prices from Skyscanner. Click to book.</p>
-      ${flights.offers.map(o => {
-        const out      = o.outbound || {};
-        const ret      = o.return   || {};
-        const carriers = (out.carriers || []).join(', ');
-        const stops    = out.stops === 0 ? 'Direct' : `${out.stops} stop${out.stops > 1 ? 's' : ''}`;
-        const bookUrl  = _skyscannerUrl(out.origin, out.destination, out.departure, ret.departure, 1);
-        return `
-        <div class="offer-card">
-          <div style="flex:1">
-            <div class="offer-price">£${esc(o.price?.per_person)} <small>pp · £${esc(o.price?.raw)} total</small></div>
-            <div class="offer-segments">
-              <div><span>${esc(out.origin)} → ${esc(out.destination)}</span> · ${esc((out.departure||'').replace('T',' '))} · ${esc(stops)}${carriers ? ' · ' + esc(carriers) : ''}</div>
-              ${ret.origin ? `<div><span>${esc(ret.origin)} → ${esc(ret.destination)}</span> · ${esc((ret.departure||'').replace('T',' '))}</div>` : ''}
-            </div>
-          </div>
-          <a href="${bookUrl}" target="_blank" rel="noopener" class="btn btn-primary" style="align-self:center;white-space:nowrap">Book →</a>
-        </div>`;
-      }).join('')}
+      <h3>✈ Search Flights</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">
+        ${esc(origin)} → ${esc(destination)} · ${esc(departure)}
+        ${flights.return ? ` → ${esc(flights.return)}` : ''} · ${esc(adults)} traveller${adults > 1 ? 's' : ''} · ${esc(cabin_class)}
+      </p>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <a href="${skyscanner}" target="_blank" rel="noopener" class="btn btn-primary">
+          Search on Skyscanner →
+        </a>
+        <a href="${google_flights}" target="_blank" rel="noopener" class="btn btn-secondary">
+          Search on Google Flights →
+        </a>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">
+        Links open with your dates, route and passenger count pre-filled.
+      </p>
     </div>`;
 }
 
