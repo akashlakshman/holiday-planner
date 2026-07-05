@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holiday Planner – AI-Powered Itinerary Generator</title>
+  <link rel="stylesheet" href="../styles/styles.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">✈ Holiday Planner <span class="logo-sub">powered by Agent Akash</span></div>
+      <nav class="header-actions">
+        <a href="#saved" class="btn btn-ghost" id="btn-view-saved">Saved Trips</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <h1>Plan Your Dream Holiday<br /><span class="hero-accent">Powered by Agent Akash</span></h1>
+      <p class="hero-sub">Enter your details, answer a few quick questions, and get a personalised day-by-day itinerary with live flight and hotel options.</p>
+    </div>
+  </section>
+
+  <!-- ===== MAIN PLANNER FORM ===== -->
+  <main class="container" id="planner-section">
+    <form id="planner-form" novalidate>
+
+      <!-- ── Step 1: Trip Basics ── -->
+      <section class="card step-card" id="step-1">
+        <h2 class="step-title"><span class="step-badge">1</span> Trip Basics</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="origin_city">Travelling from <span class="req">*</span></label>
+            <input id="origin_city" name="origin_city" type="text" placeholder="e.g. London, UK" required />
+          </div>
+          <div class="form-group">
+            <label for="destinations">Destination(s) <span class="req">*</span></label>
+            <input id="destinations" name="destinations" type="text" placeholder="e.g. Paris, Rome (comma-separated)" required />
+          </div>
+          <div class="form-group">
+            <label for="departure_date">Departure Date <span class="req">*</span></label>
+            <input id="departure_date" name="departure_date" type="date" required />
+          </div>
+          <div class="form-group">
+            <label for="return_date">Return Date <span class="req">*</span></label>
+            <input id="return_date" name="return_date" type="date" required />
+          </div>
+          <div class="form-group">
+            <label for="travellers">Travellers</label>
+            <input id="travellers" name="travellers" type="number" min="1" max="20" value="2" />
+          </div>
+          <div class="form-group">
+            <label for="cabin_class">Cabin Class</label>
+            <select id="cabin_class" name="cabin_class">
+              <option value="ECONOMY">Economy</option>
+              <option value="PREMIUM_ECONOMY">Premium Economy</option>
+              <option value="BUSINESS">Business</option>
+              <option value="FIRST">First</option>
+            </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="skip_flights" name="skip_flights" type="checkbox" />
+              No flights needed
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Step 2: Travel Style ── -->
+      <section class="card step-card" id="step-2">
+        <h2 class="step-title"><span class="step-badge">2</span> Travel Style</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="trip_purpose">Trip Purpose</label>
+            <select id="trip_purpose" name="trip_purpose">
+              <option value="leisure">Leisure / Holiday</option>
+              <option value="honeymoon">Honeymoon / Romantic</option>
+              <option value="family">Family</option>
+              <option value="adventure">Adventure</option>
+              <option value="business">Business + Leisure</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="travel_style">Budget Style</label>
+            <select id="travel_style" name="travel_style">
+              <option value="budget">Budget</option>
+              <option value="balanced" selected>Balanced</option>
+              <option value="luxury">Luxury</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="accommodation_preference">Accommodation</label>
+            <select id="accommodation_preference" name="accommodation_preference">
+              <option value="hotel" selected>Hotel</option>
+              <option value="airbnb">Airbnb / Apartment</option>
+              <option value="hostel">Hostel</option>
+              <option value="resort">Resort</option>
+            </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="skip_hotels" name="skip_hotels" type="checkbox" />
+              No accommodation needed
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="pace">Pace</label>
+            <select id="pace" name="pace">
+              <option value="relaxed">Relaxed</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="packed">Packed</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Step 3: Who's Travelling ── -->
+      <section class="card step-card" id="step-3">
+        <h2 class="step-title"><span class="step-badge">3</span> Who's Travelling?</h2>
+        <div class="form-grid">
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="has_children" name="has_children" type="checkbox" />
+              Travelling with children
+            </label>
+          </div>
+          <div class="form-group" id="children-ages-group" style="display:none;">
+            <label for="children_ages">Children's Ages</label>
+            <input id="children_ages" name="children_ages" type="text" placeholder="e.g. 4, 7, 12" />
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="has_elderly" name="has_elderly" type="checkbox" />
+              Travelling with elderly guests
+            </label>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="mobility_requirements" name="mobility_requirements" type="checkbox" />
+              Mobility / accessibility requirements
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Step 4: Interests & Diet ── -->
+      <section class="card step-card" id="step-4">
+        <h2 class="step-title"><span class="step-badge">4</span> Interests &amp; Diet</h2>
+
+        <p class="section-hint">Select all that apply</p>
+        <div class="chip-grid" id="interests-chips">
+          <button type="button" class="chip" data-value="history">🏛 History</button>
+          <button type="button" class="chip" data-value="food">🍽 Food &amp; Drink</button>
+          <button type="button" class="chip" data-value="nightlife">🎶 Nightlife</button>
+          <button type="button" class="chip" data-value="nature">🌿 Nature</button>
+          <button type="button" class="chip" data-value="art">🎨 Art &amp; Culture</button>
+          <button type="button" class="chip" data-value="shopping">🛍 Shopping</button>
+          <button type="button" class="chip" data-value="beaches">🏖 Beaches</button>
+          <button type="button" class="chip" data-value="adventure_sports">🧗 Adventure Sports</button>
+          <button type="button" class="chip" data-value="wellness">🧘 Wellness &amp; Spa</button>
+          <button type="button" class="chip" data-value="photography">📷 Photography</button>
+        </div>
+
+        <div class="form-group mt-md">
+          <label for="dietary">Dietary Requirements</label>
+          <div class="chip-grid" id="dietary-chips">
+            <button type="button" class="chip" data-value="vegetarian">🥗 Vegetarian</button>
+            <button type="button" class="chip" data-value="vegan">🌱 Vegan</button>
+            <button type="button" class="chip" data-value="halal">☪ Halal</button>
+            <button type="button" class="chip" data-value="kosher">✡ Kosher</button>
+            <button type="button" class="chip" data-value="gluten-free">🌾 Gluten-Free</button>
+            <button type="button" class="chip" data-value="nut-free">🥜 Nut-Free</button>
+          </div>
+        </div>
+
+        <div class="form-group mt-md">
+          <label for="special_instructions">Any Special Instructions?</label>
+          <textarea id="special_instructions" name="special_instructions" rows="3" placeholder="e.g. anniversary trip, surprise proposal, visiting family..."></textarea>
+        </div>
+      </section>
+
+      <!-- ── Step 5: AI Provider ── -->
+      <section class="card step-card" id="step-5">
+        <h2 class="step-title"><span class="step-badge">5</span> AI Provider</h2>
+        <div class="provider-grid">
+          <label class="provider-card selected">
+            <input type="radio" name="ai_provider" value="gemini" checked />
+            <span class="provider-name">Gemini</span>
+            <span class="provider-desc">Google's Gemini 1.5 Flash — fast and capable</span>
+          </label>
+          <label class="provider-card">
+            <input type="radio" name="ai_provider" value="anthropic" />
+            <span class="provider-name">Claude</span>
+            <span class="provider-desc">Anthropic Claude 3.5 Sonnet — detailed &amp; thoughtful</span>
+          </label>
+          <label class="provider-card">
+            <input type="radio" name="ai_provider" value="openai" />
+            <span class="provider-name">GPT-4o</span>
+            <span class="provider-desc">OpenAI GPT-4o — structured JSON output</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- ── Submit ── -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg" id="btn-generate">
+          <span class="btn-text">✨ Generate My Itinerary</span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </button>
+        <p class="form-hint">This may take 15–30 seconds while AI crafts your itinerary.</p>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- ===== RESULTS SECTION ===== -->
+  <section class="container hidden" id="results-section">
+    <div id="results-container"></div>
+    <div class="results-actions">
+      <button class="btn btn-secondary" id="btn-save">💾 Save Trip</button>
+      <button class="btn btn-ghost" id="btn-new">Plan Another Trip</button>
+    </div>
+  </section>
+
+  <!-- ===== SAVED TRIPS SECTION ===== -->
+  <section class="container hidden" id="saved-section">
+    <h2 class="section-heading">Saved Trips</h2>
+    <div id="saved-list"></div>
+    <button class="btn btn-ghost mt-md" id="btn-back-from-saved">← Back to Planner</button>
+  </section>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="polite"></div>
+
+  <script src="../scripts/app.js"></script>
+</body>
+</html>
